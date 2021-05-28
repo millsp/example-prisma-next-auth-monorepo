@@ -1,0 +1,18 @@
+fragment user on User {
+	id
+	name
+	email
+	groups
+}
+
+query user($id: String!) {
+				user(id: $id) {
+		...user
+	}
+}
+
+query allUsers {
+	allUsers {
+		...user
+	}
+}

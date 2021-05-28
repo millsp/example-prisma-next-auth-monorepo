@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// when creating a new database, ensure it has access to the UUID function with `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`
+
+// The User model is for information such as the users name and email address.
+// Email address are optional, but if one is specified for a User then it must be unique.
+model User {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  name  String?
+  email String? @unique
+
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+
+  groups Json @default("[\"USER\"]")
+
+  // Delete these if the user is hard-deleted
+  /// @onDelete(CASCADE)
+  accounts           Account[]
+  /// @onDelete(CASCADE)
+  sessions           Session[]
+
+  updatedAt DateTime  @default(now()) @map("updated_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("users")
+}
+
+// The UserAccount model is for information about OAuth accounts associated with a User.
+// A single User can have multiple Accounts, each UserAccount can only have one User.
+model Account {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  User       User   @relation(fields: [userId], references: [id])
+  userId     String @map("user_id") @db.Uuid
+  compoundId String @unique @map("compound_id") // ensures there is only one entry for a given provider and account
+
+  providerType      String @map("provider_type")
+  providerId        String @map("provider_id")
+  providerAccountId String @map("provider_account_id")
+
+  refreshToken       String?   @map("refresh_token")
+  accessToken        String?   @map("access_token")
+  accessTokenExpires DateTime? @map("access_token_expires")
+
+  updatedAt DateTime @default(now()) @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+
+  @@index(fields: [providerAccountId], name: "providerAccountId")
+  @@index(fields: [providerId], name: "providerId")
+  @@index(fields: [userId], name: "userId")
+  @@map("accounts")
+}
+
+// The UserSession model is used for database sessions.
+// A single User can have multiple Sessions.
+model Session {
+  id Int @id @default(autoincrement())
+
+  User   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id") @db.Uuid
+
+  expires      DateTime
+  sessionToken String   @unique @map("session_token")
+  accessToken  String   @unique @map("access_token")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("sessions")
+}
+
+// The Verification Request model is used to store tokens for passwordless sign in emails.
+// A single User can have multiple open Verification Requests (e.g. to sign in to different devices).
+model VerificationRequest {
+  id Int @id @default(autoincrement())
+
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("verification_requests")
+}

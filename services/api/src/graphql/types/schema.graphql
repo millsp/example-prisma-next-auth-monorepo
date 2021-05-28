@@ -1,0 +1,22 @@
+scalar EmailAddress
+scalar URL
+scalar JSON
+scalar DateTime
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+type Query {
+	_empty: String  
+}
+
+type Mutation {
+	_empty: String
+}
+
+schema {
+	query: Query
+	mutation: Mutation
+}
