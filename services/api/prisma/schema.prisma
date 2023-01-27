@@ -12,7 +12,7 @@ datasource db {
 // The User model is for information such as the users name and email address.
 // Email address are optional, but if one is specified for a User then it must be unique.
 model User {
-  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id String @id @default(cuid()) @db.Uuid
 
   name  String?
   email String? @unique
@@ -38,7 +38,7 @@ model User {
 // The UserAccount model is for information about OAuth accounts associated with a User.
 // A single User can have multiple Accounts, each UserAccount can only have one User.
 model Account {
-  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id String @id @default(cuid()) @db.Uuid
 
   User       User   @relation(fields: [userId], references: [id])
   userId     String @map("user_id") @db.Uuid

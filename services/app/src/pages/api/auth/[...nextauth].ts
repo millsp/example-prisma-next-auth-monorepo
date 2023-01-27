@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === `production`) {
 }
 
 export default NextAuth({
-	// adapter: Adapters.Prisma.Adapter({ prisma }),
+	adapter: Adapters.Prisma.Adapter({ prisma }),
 
 	providers: [
 		Providers.Email({
